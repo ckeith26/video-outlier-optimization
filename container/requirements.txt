@@ -1,0 +1,12 @@
+transformers
+tqdm
+torch
+numpy
+pandas
+seaborn
+torchvision
+av
+nbconvert 
+nbclient 
+papermill
+unrar
