@@ -6,7 +6,10 @@
 
 ## Setup and Training
 
-1. Download Docker: `npm install docker`
+1. Download Docker: `pip install docker`
+2. Run `sh ./scripts/run.sh` to build the Docker image and run the container.
+
+**Or** manually run the following commands:
 2. Build the Docker image: `docker build -t video_outlier_optimization -f ./container/Dockerfile .`
 3. Run the Docker image: `docker run -p 8888:8888 video_outlier_optimization`
 
