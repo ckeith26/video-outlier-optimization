@@ -11,3 +11,4 @@ nbclient
 papermill
 requests
 patoolib
+configparser

@@ -11,37 +11,43 @@ import traitlets
 import requests
 import patoolib
 import papermill as pm
+import configparser
+
+# start the pipeline
+execute = setup()
+execute.pipeline()
 
 class setup():
-    # choose models to train from scratch
-    models = ["../training_files/base_model.ipynb", 
-              "../training_files/base_outlier_model.ipynb"] # add more models here
-    
-    data_files = []
-    train_samples = -1
+    def __init__(self):
+        self.config = self.read_config('../config.ini')
+        self.models = [self.config.get('models', 'model1'), self.config.get('models', 'model2')]
+        self.train_size = self.config.getfloat('training', 'train_size')
+        self.train_test_split = self.config.getfloat('training', 'train_test_split')
+        self.epochs = self.config.getint('training', 'epochs')
+        self.load_more_data = self.config.getboolean('data', 'load_more_data')
 
-    def __init__(self, models):
-        models = models
-
-    # execute
-    pipeline()
-
-    def pipeline():
-        # load the data
-        load_raw_data()
-        load_data()
+    def read_config(self, config_file):
+        config = configparser.ConfigParser()
+        config.read(config_file)
+        return config
+        
+    def pipeline(self):
+        # if you want to load more data
+        if self.load_more_data:
+            self.load_raw_data()
+            self.load_more_data()
         # load the models
-        for model in models:
+        for model in self.models:
             train_model(model)
             with open('../results/results.txt', 'r') as f:
                 print(f.read())
 
-    def train_model(model_path):
+    def train_model(self, model_path):
         # Load the notebook
         pm.execute_notebook(
             input_path = model_path,
-            output_path = f"{model_path.split('.')[0]}_executed.ipynb",
-            parameters = [self.data_files, train_samples]
+            output_path = f"{model_path.split('.')[0]}_executed.ipynb"
+            # parameters = [self.data_files, train_samples]
         )
 
     def load_raw_data():
@@ -67,14 +73,12 @@ class setup():
         # Unrar the downloaded file
         patoolib.extract_archive("../data/ucfTrainTestlist.zip", outdir="../data/ucfTrainTestlist")
 
-    def load_data(train_size = 0.1, train_test_split = 0.8, batch_size = 128):
+    def load_more_data(self):
         frames_per_clip = 5
         step_between_clips = 1
         path='../data/ucfTrainTestlist'
         ucf_data_dir = "../data/UCF-101/"
         ucf_label_dir = path
-        frames_per_clip = 5
-        step_between_clips = 1
 
         def divide_by_255(x):
             return x / 255.
@@ -98,16 +102,19 @@ class setup():
         test_dataset = UCF101(ucf_data_dir, ucf_label_dir, frames_per_clip=frames_per_clip,
                             step_between_clips=step_between_clips, train=False, transform=tfs)
 
+        if len(train_dataset) < self.train_size:
+            raise ValueError('train_size is larger than the dataset size')
+        
+        if self.train_test_split > 1 or self.train_test_split < 0:
+            raise ValueError('train_test_split must be between 0 and 1')
+        
         # Split the datasets
-        train_size = train_test_split * train_size
-        train_size_rest = train_test_split * (1 - train_size)
-        test_size = (1 - train_test_split) * train_size
-        test_size_rest = (1 - train_test_split) * (1 - train_size)
+        train_size_rest = len(train_dataset) - self.train_size
+        test_size = round((self.train_size / (self.train_test_split)) * (1 - self.train_test_split))
+        test_size_rest = len(test_dataset) - test_size
 
-        train_set, test_set_org = torch.utils.data.random_split(train_dataset, [train_size, train_size_rest])
+        train_set, test_set_org = torch.utils.data.random_split(train_dataset, [self.train_size, train_size_rest])
         test_set, test_set2 = torch.utils.data.random_split(test_dataset, [test_size, test_size_rest])
-
-        self.train_samples = round(train_size/1000)
 
         with open('../data/train_dataset.pt', 'wb') as f:
             torch.save(train_dataset, f)
@@ -116,25 +123,36 @@ class setup():
         with open('../data/test_dataset.pt', 'wb') as f:
             torch.save(test_dataset, f)
 
-        with open(f'../data/train_dataset_{round(train_size/1000)}k.pt', 'wb') as f:
+        with open(f'../data/train_dataset_{round(train_test_size/1000)}k.pt', 'wb') as f:
             torch.save(train_set, f)
 
         # Save test_dataset
         with open(f'../data/test_dataset_{round(test_size/1000)}k.pt', 'wb') as f:
             torch.save(test_set, f)
 
-        with open(f'../data/train_dataset_{round(train_size_rest/1000)}k_rest.pt', 'wb') as f:
+        with open(f'../data/train_dataset_{round(train_test_samples_rest/1000)}k_rest.pt', 'wb') as f:
             torch.save(test_set_org, f)
 
-        self.files.append(f'../data/train_dataset_{round(train_size/1000)}k.pt', 
-                     f'../data/test_dataset_{round(test_size/1000)}k.pt', 
-                     f'../data/train_dataset_{round(train_size_rest/1000)}k_rest.pt',
-                     f'../data/test_dataset_{round(test_size_rest/1000)}k_rest.pt', 
-                     '../data/train_dataset.pt', 
-                     '../data/test_dataset.pt')
+        # self.data_files.append(
+        #             f'../data/test_dataset_{round(test_size_rest/1000)}k_rest.pt', 
+        #             f'../data/test_dataset_{round(test_size/1000)}k.pt', 
+        #             '../data/test_dataset.pt'    
+        #             f'../data/train_dataset_{round(train_size_rest/1000)}k_rest.pt',
+        #             f'../data/train_dataset_{round(self.train_size/1000)}k.pt', 
+        #              '../data/train_dataset.pt', 
+        #              )
+        config['data'][f'train_dataset'] = '../data/train_dataset.pt'
+        config['data'][f'test_dataset'] = '../data/test_dataset.pt'
+        config['data'][f'train_subset_{round(train_size/1000)}k'] = f'../data/train_subset_{round(train_size/1000)}k.pt'        
+        config['data'][f'train_subset_{round(train_size_rest/1000)}k_rest'] = f'../data/train_subset_{round(train_size_rest/1000)}k_rest.pt'
+        config['data'][f'test_subset_{round(test_size/1000)}k'] = f'../data/test_subset_{round(test_size/1000)}k.pt'
+        config['data'][f'test_size_{round(test_size_rest/1000)}k_rest'] = f'../data/test_subset_{round(test_size_rest/1000)}k_rest.pt'
+
+        with open('config.ini', 'w') as configfile:
+            config.write(configfile)
 
         # Save test_dataset
         with open(f'../data/test_dataset_{round(test_size_rest/1000)}k_rest.pt', 'wb') as f:
             torch.save(test_set2, f)
 
-        return (train_loader_sub, test_loader_sub, train_loader_full, test_loader_full)
+        return train_loader_sub, test_loader_sub, train_loader_full, test_loader_full
