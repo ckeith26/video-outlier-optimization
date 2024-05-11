@@ -1,6 +1,6 @@
 # Video Outlier Optimization
 
-## (insert deployed website here)[https://www.render.com]
+## [Insert deployed website here](https://www.render.com)
 
 ## INSERT Motivation here
 
