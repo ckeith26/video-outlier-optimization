@@ -1,19 +1,13 @@
 # type: ignore
 import torch
-import av
-import torchvision
 from torch import nn
 from torchvision import transforms
 from torchvision.datasets import UCF101
-import nbformat
 from nbconvert.preprocessors import ExecutePreprocessor
-import traitlets
 import requests
 import patoolib
 import papermill as pm
 import configparser
-import subprocess
-import sys
 
 class setup:
     def __init__(self):
@@ -28,19 +22,16 @@ class setup:
         config = configparser.ConfigParser()
         config.read(config_file)
         return config
-    
-    def install_kernel(self):
-        subprocess.check_call([sys.executable, "-m", "ipykernel", "install", "--user", "--name=my_kernel"])
-        
+
     def pipeline(self):
         # if you want to load more data
         if self.load_more_data:
             self.load_raw_data()
             self.load_more_data()
         # load the models
-        self.install_kernel()
+        
         for model in self.models:
-            
+            # raise ValueError(model)
             self.train_model(model)
             with open('../results/results.txt', 'r') as f:
                 print(f.read())
@@ -50,7 +41,7 @@ class setup:
         pm.execute_notebook(
             input_path = model_path,
             output_path = f"{model_path.split('.')[0]}_executed.ipynb",
-            kernel = 'my_kernel'
+            kernel = 'python3'
             # parameters = [self.data_files, train_samples]
         )
 

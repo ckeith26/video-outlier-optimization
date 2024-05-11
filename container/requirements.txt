@@ -13,4 +13,3 @@ requests
 patool
 configparser
 ipykernel
-sys

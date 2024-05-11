@@ -6,6 +6,12 @@
 
 ## Setup and Training
 
+### Jupyter Notebooks [Independent Model Training](./training_files/)
+
+You can train any of the models directly from the Jupyter notebooks. The trained models will be saved in the [models](./models/) directory.
+
+### Pipeline [Model Training with Pipeline](./scripts/setup.py)
+
 1. Download Docker: `pip install docker`
 2. Run `sh ./scripts/run.sh` to build the Docker image and run the container.
 
@@ -18,9 +24,9 @@ Troubleshooting: [Docker docs](https://docs.docker.com/get-docker/)
 ## Model Modification
 
 ### Training Parameters
-- train_test_size: The proportion of the dataset to include in the test split (e.g., 0.068652517 which equals 120k total samples).
+- train_test_size: Number of training samples to use (e.g., 100k).
 - train_test_split: The proportion of the dataset to include in the train split (e.g., 0.8).
-- epochs: The number of epochs to train the model (e.g., 15).
+- epochs: for training all models (e.g., 15).
 
 ### Data Parameters
 - load_more_data: if True, the code will load a new dataset with the specified train_size.
