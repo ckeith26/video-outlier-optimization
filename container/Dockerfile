@@ -5,13 +5,22 @@ FROM python:3.9-slim
 WORKDIR /app
 
 # Copy the requirements file
-COPY requirements.txt .
+COPY ./container/requirements.txt .
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        gcc \
+        python3-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install the required packages
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install -r requirements.txt
+
+# Install the Jupyter kernel
+RUN python -m ipykernel install --name my_kernel
 
 # Copy the rest of the application code
 COPY . .
 
 # Set the entry point (if needed)
-CMD ["python", "setup.py"]
+CMD ["python", "./scripts/setup.py"]

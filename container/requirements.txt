@@ -10,5 +10,7 @@ nbconvert
 nbclient 
 papermill
 requests
-patoolib
+patool
 configparser
+ipykernel
+sys

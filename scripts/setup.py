@@ -12,14 +12,12 @@ import requests
 import patoolib
 import papermill as pm
 import configparser
+import subprocess
+import sys
 
-# start the pipeline
-execute = setup()
-execute.pipeline()
-
-class setup():
+class setup:
     def __init__(self):
-        self.config = self.read_config('../config.ini')
+        self.config = self.read_config('config.ini')
         self.models = [self.config.get('models', 'model1'), self.config.get('models', 'model2')]
         self.train_size = self.config.getfloat('training', 'train_size')
         self.train_test_split = self.config.getfloat('training', 'train_test_split')
@@ -30,6 +28,9 @@ class setup():
         config = configparser.ConfigParser()
         config.read(config_file)
         return config
+    
+    def install_kernel(self):
+        subprocess.check_call([sys.executable, "-m", "ipykernel", "install", "--user", "--name=my_kernel"])
         
     def pipeline(self):
         # if you want to load more data
@@ -37,8 +38,10 @@ class setup():
             self.load_raw_data()
             self.load_more_data()
         # load the models
+        self.install_kernel()
         for model in self.models:
-            train_model(model)
+            
+            self.train_model(model)
             with open('../results/results.txt', 'r') as f:
                 print(f.read())
 
@@ -46,7 +49,8 @@ class setup():
         # Load the notebook
         pm.execute_notebook(
             input_path = model_path,
-            output_path = f"{model_path.split('.')[0]}_executed.ipynb"
+            output_path = f"{model_path.split('.')[0]}_executed.ipynb",
+            kernel = 'my_kernel'
             # parameters = [self.data_files, train_samples]
         )
 
@@ -156,3 +160,7 @@ class setup():
             torch.save(test_set2, f)
 
         return train_loader_sub, test_loader_sub, train_loader_full, test_loader_full
+
+# start the pipeline
+execute = setup()
+execute.pipeline()
