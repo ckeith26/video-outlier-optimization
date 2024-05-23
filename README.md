@@ -65,21 +65,23 @@ This code reads configuration values from an INI file named `config.ini` located
 
 ```ini
 [models]
-model1 = ../training_files/base_model.ipynb
-model2 = ../training_files/base_outlier_model.ipynb
+model1 = ./training_files/base_model.ipynb
+model2 = ./training_files/outlier_model_5P.ipynb
+model3 = ./training_files/outlier_model_5P.ipynb
+model4 = ./training_files/outlier_model_5P.ipynb
 
 [training]
 train_size = 100000
-train_test_split = 0.9
+train_test_split = 0.8
 epochs = 15
 batch_size = 128
 
 [data]
 load_more_data = False
-train_dataset = ../data/train_data.pt
-test_dataset = ../data/test_data.pt
-train_subset_100k = ../data/train_subset_100k.pt
-test_subset_20k = ../data/test_subset_20k.pt
-train_subset_rest = ../data/train_subset_100k_rest.pt
-test_subset_rest = ../data/test_subset_20k_rest.pt
+train_dataset = ./data/train_data.pt
+test_dataset = ./data/test_data.pt
+train_subset_100k = ./data/train_subset_100k.pt
+test_subset_20k = ./data/test_subset_20k.pt
+train_subset_100k_rest = ./data/train_subset_100k_rest.pt
+test_subset_20k_rest = ./data/test_subset_20k_rest.pt
 ```
