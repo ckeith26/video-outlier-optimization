@@ -36,7 +36,7 @@ If you don't have a conda env setup already:
 `$ conda create -n myenv python=3.8`
 `$ conda install transformers tqdm torchvision torch numpy pandas seaborn av ipykernel`
 
-### Pipeline [Model Training with Pipeline](./scripts/setup.py)
+### [Model Training with Pipeline](./scripts/setup.py)
 
 1. Download Docker: `$ pip install docker`
 2. Run `$ sh ./scripts/run.sh` to build the Docker image and run the container.
